@@ -4,23 +4,23 @@ import urllib.request
 import os
 from bs4 import BeautifulSoup
 import logging
-
+import requests
 
 class Tools:
 
     # 从url获取页面内容
     def get_html(self, url):
         try:
-            times = 3
+            times = 3    
             while times > 0:
-                data = urllib.request.urlopen(url)
-                code = data.code
+                param_data = {"User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.186 Safari/537.36"}
+                response = requests.get(url,params=param_data)
                 times = times - 1
-                if code == 200:
+                if response.status_code == 200:
                     times = False
-            if code == 200:
-                data = data.read().decode("utf-8")
-                return data
+            if response.status_code == 200:
+                response.encoding = 'utf-8'
+                return response.text
             else:
                 return False
         except:

@@ -10,7 +10,7 @@ class Builder:
         self.mongodb = self.di.getMongoDb()
 
     def run(self):
-        for n in range(2201074,2400000):
+        for n in range(2201128,2400000):
             url = "http://fenxi.zgzcw.com/"+str(n)+"/bjop"
             self._url = url
             source = self.get_Source(url)
@@ -37,10 +37,14 @@ class Builder:
         host_name = dom.select(".logoVs .host-name a")[0].string
         visit_name = dom.select(".logoVs .visit-name a")[0].string
         match_date = dom.select(".bfyc-duizhen-r .date span")[0].string
-        left_score  = dom.select(".vs-score span")[0].string
-        right_score = dom.select(".vs-score span")[1].string
-        t_rate_list =  dom.select(".tr-hr")
 
+        match_score =  dom.select(".vs-score span")
+        if len(match_score) == 0:
+            left_score = right_score = 0
+        else:
+            left_score  = match_score[0].string
+            right_score = match_score[1].string
+        t_rate_list =  dom.select(".tr-hr")
         rate_list = []
         for tr in t_rate_list:
             tds = tr.select("td")

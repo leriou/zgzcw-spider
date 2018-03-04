@@ -12,6 +12,7 @@ pymongo = "*"
 elasticsearch = "*"
 redis = "*"
 "beautifulsoup4" = "*"
+requests = "*"
 
 
 [dev-packages]
