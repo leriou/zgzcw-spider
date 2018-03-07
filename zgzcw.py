@@ -13,12 +13,15 @@ class Builder:
         for n in range(2201128,2400000):
             url = "http://fenxi.zgzcw.com/"+str(n)+"/bjop"
             self._url = url
-            source = self.get_Source(url)
+            source = self.get_source(url)
             if source:
                 res = self.analysis_html(source)
                 self.mongodb["zucai"]["zgzcw"].insert(res)
+
+    def get_list(self):
+        pass
     
-    def get_Source(self,url):
+    def get_source(self,url):
         html = self.redis.get(url)
         if html == None:
             dom = self.tools.get_dom_obj(url)
