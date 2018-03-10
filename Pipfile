@@ -13,6 +13,7 @@ elasticsearch = "*"
 redis = "*"
 "beautifulsoup4" = "*"
 requests = "*"
+selenium = "*"
 
 
 [dev-packages]

@@ -2,11 +2,21 @@
 # -*- coding: utf-8 -*-
 import urllib.request
 import os
+import di
+import time
 from bs4 import BeautifulSoup
-import logging
-import requests
+from selenium import webdriver
+
 
 class Tools:
+    
+    def __init__(self):
+        self.di = di.Di()
+        self.redis = self.di.getRedis()
+        self.browser = None
+        
+        self.start = time.time()
+        self.end = 0
 
     # 从url获取页面内容
     def get_html(self, url):
@@ -26,14 +36,35 @@ class Tools:
         except:
             return False
 
-    def get_dom_obj_by_content(self,html):
-        return BeautifulSoup(html,'html.parser')
+    # 关闭浏览器
+    def close_browser(self):
+        self.browser.close()
+
+    # 浏览器获取
+    def browser_get_html(self,url):
+        if self.browser == None:
+            self.browser = webdriver.Firefox()
+        self.browser.get(url)
+        return self.browser.page_source
+
+    # 从html字符串获取dom对象
+    def get_dom_by_html(self,html):
+        return BeautifulSoup(html, 'html.parser')
 
     # 获取页面的dom对象
-    def get_dom_obj(self, url):
-        data = self.get_html(url)
+    def get_dom_obj(self, url, cached=True,browser=True):
+        if cached:
+            cache_html  = self.redis.get(url)
+            if cache_html != None :
+                return self.get_dom_by_html(cache_html)
+        if browser:
+            data = self.browser_get_html(url)
+        else:
+            data = self.get_html(url)
         if data:
-            return self.get_dom_obj_by_content(data)
+            if cached:
+                self.redis.set(url,data)
+            return self.get_dom_by_html(data)
         else:
             return False
 
@@ -53,8 +84,11 @@ class Tools:
         fh.write(content)
         fh.close()
 
-    def logging(self,log):
-        logger = logging.getLogger("Tools")
-        print(log)
-        logger.info(log)
-
+    def get_time(self):
+        return time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
+        
+    def cost(self, log=''):
+        tmp = time.time()
+        total, last = tmp - self.start, tmp - self.end
+        self.end = tmp
+        print("%s 总消耗时间:%s s,距上次%s s" % (log, total, last))

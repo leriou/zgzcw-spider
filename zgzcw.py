@@ -1,5 +1,6 @@
 import di
 import tools
+import time
 
 class Builder:
 
@@ -9,38 +10,47 @@ class Builder:
         self.redis = self.di.getRedis()
         self.mongodb = self.di.getMongoDb()
 
+        self.list_url = "http://cp.zgzcw.com/lottery/jchtplayvsForJsp.action?lotteryId=47&type=jcmini"
+        self.bjop_url = "http://fenxi.zgzcw.com/"
+
+
+    # 获取url
+    def get_module_url(self,module,params):
+        if module == "bjop":
+            url = self.bjop_url + str(params) +"/bjop"
+        elif module == 'list':
+            url = self.list_url + "&issue=" + params
+        return url
+
     def run(self):
-        for n in range(2201128,2400000):
-            url = "http://fenxi.zgzcw.com/"+str(n)+"/bjop"
-            self._url = url
-            source = self.get_source(url)
-            if source:
-                res = self.analysis_html(source)
-                self.mongodb["zucai"]["zgzcw"].insert(res)
+        self.get_list()
 
     def get_list(self):
-        pass
+        url = self.get_module_url("list","2018-03-07")
+        match_list = self.analysis_list(url)
+        self.tools.close_browser()
     
-    def get_source(self,url):
-        html = self.redis.get(url)
-        if html == None:
-            dom = self.tools.get_dom_obj(url)
-            if dom:
-                self.redis.set(url,dom)
-        else:
-            dom = self.tools.get_dom_obj_by_content(html)
-        if len(dom.select(".error")) == 1:
-            self.tools.logging(url+ " get: error")
-            return 
-        else:
-            self.tools.logging(url+ " get: success") 
-        return dom
+    def analysis_list(self,url):
+        match_list = []
+        dom = self.tools.get_dom_obj(url)
+        for tr in dom.select(".endBet") + dom.select(".beginBet"):
+            match = {
+                "competition":tr.get("m"),
+                "match_start_time":tr.get("t"),
+                "hostname":tr.select(".wh-4 a")[0].string,
+                "visitname":tr.select(".wh-6 a")[0].string,
+                "match_score":tr.select(".wh-5")[0].string.strip(),
+                "bjopid":tr.select(".wh-10")[0].get("newplayid"),
 
-    def analysis_html(self,dom):
+            }
+            match_list.append(match)
+        print(match_list)
+        return match_list 
+
+    def analysis_bjop(self,dom):
         host_name = dom.select(".logoVs .host-name a")[0].string
         visit_name = dom.select(".logoVs .visit-name a")[0].string
         match_date = dom.select(".bfyc-duizhen-r .date span")[0].string
-
         match_score =  dom.select(".vs-score span")
         if len(match_score) == 0:
             left_score = right_score = 0
@@ -55,7 +65,8 @@ class Builder:
             win_rate = tds[2].string
             eq_rate = tds[3].string
             fail_rate = tds[4].string
-            rate_list.append({"com_name":company_name,"win":win_rate,"eq":eq_rate,"fail":fail_rate})
+            rate_tr =  {"com_name":company_name,"win":win_rate,"eq":eq_rate,"fail":fail_rate}
+            rate_list.append(rate_tr)
         ret = {
             "url":self._url,
             "host_name":host_name,
@@ -63,6 +74,7 @@ class Builder:
             "match_date":match_date,
             "left_score":left_score,
             "right_socre":right_score,
+            "match_result": str(left_score) + ":" + str(right_score),
             "rate_list":rate_list
         }
         self.tools.logging(host_name + " VS "+ visit_name + " done")
