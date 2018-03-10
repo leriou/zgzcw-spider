@@ -38,7 +38,8 @@ class Tools:
 
     # 关闭浏览器
     def close_browser(self):
-        self.browser.close()
+        if self.browser != None:
+            self.browser.close()
 
     # 浏览器获取
     def browser_get_html(self,url):

@@ -28,12 +28,29 @@ class Builder:
     def get_list(self):
         url = self.get_module_url("list","2018-03-07")
         match_list = self.analysis_list(url)
+        self.mongodb["zgzcw"]["matches"].insert(match_list)
         self.tools.close_browser()
     
     def analysis_list(self,url):
         match_list = []
         dom = self.tools.get_dom_obj(url)
         for tr in dom.select(".endBet") + dom.select(".beginBet"):
+            odds = []
+            for wh in tr.select(".wh-8 .tz-area"):
+                if wh.select("a")[0].text == "未开售":
+                    od = {
+                        "rq":wh.select(".rq")[0].string,
+                        "odds":"未开售"
+                    }
+                else:     
+                    od = {
+                        "rq":wh.select(".rq")[0].string,
+                        "odds":"",
+                        "win":wh.select("a")[0].text,
+                        "eq":wh.select("a")[1].text,
+                        "failed":wh.select("a")[2].text
+                    }
+                odds.append(od)
             match = {
                 "competition":tr.get("m"),
                 "match_start_time":tr.get("t"),
@@ -41,10 +58,9 @@ class Builder:
                 "visitname":tr.select(".wh-6 a")[0].string,
                 "match_score":tr.select(".wh-5")[0].string.strip(),
                 "bjopid":tr.select(".wh-10")[0].get("newplayid"),
-
+                "odds":odds
             }
             match_list.append(match)
-        print(match_list)
         return match_list 
 
     def analysis_bjop(self,dom):
