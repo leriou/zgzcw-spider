@@ -24,7 +24,7 @@ class Builder:
         self.get_list()
 
     def get_list(self):
-        url = self.get_module_url("list","2018-03-07")
+        url = self.get_module_url("list","2015-06-08")
         match_list = self.analysis_list(url)
         self.tools.close_browser()
         self.mongodb["zgzcw"]["matches"].insert(match_list)
@@ -84,11 +84,31 @@ class Builder:
         rate_list = []
         for tr in t_rate_list:
             tds = tr.select("td")
-            company_name = tds[1].contents[1]
-            win_rate = tds[2].string
-            eq_rate = tds[3].string
-            fail_rate = tds[4].string
-            rate_tr =  {"com_name":company_name,"win":win_rate,"eq":eq_rate,"fail":fail_rate}
+            company = tds[1].contents[1]
+            rate_tr = {
+                "company":company,
+                "begin":{
+                    "win":tds[2].get("data"),
+                    "eq":tds[3].get("data"),
+                    "lost":tds[4].get("data")
+                },
+                "latest":{
+                    "win":tds[5].get("data"),
+                    "eq":tds[6].get("data"),
+                    "lost":tds[7].get("data")
+                },
+                "probability":{
+                    "win":tds[8].get("data"),
+                    "eq":tds[9].get("data"),
+                    "lost":tds[10].get("data"),
+                },
+                "kelly_formula":{
+                    "win":tds[11].get("data"),
+                    "eq":tds[12].get("data"),
+                    "lost":tds[13].get("data"),
+                },
+                "odds":tds[14].get("data")
+            }
             rate_list.append(rate_tr)
         ret = {
             "url":url,
