@@ -35,7 +35,6 @@ class Fzdm:
     def run(self):    # 主程序
         url = self.find_from_list(self.commic["name"])
         sub_list = self.get_sub_list(url)
-        self.co["mh_sub_list"].insert(sub_list)
         self.analyse_sub(sub_list)
         self.tools.close_browser()
         self.cost("下载完成")
@@ -75,7 +74,10 @@ class Fzdm:
                 "datetime": self.tools.get_time(),
                 "commic_name":self.commic["name"]
             }
-            sublist.append(sub_info)   
+            sublist.append(sub_info)  
+        if not self.tools.check_url_success(url): 
+            self.co["mh_sub_list"].insert(sublist)
+            self.tools.marked_url_success(url)
         return sublist
 
     def analyse_sub(self,sub_list):  # 解析当前这一话的地址 
@@ -105,7 +107,9 @@ class Fzdm:
                         "sub_name":sub["sub_name"],
                         "datetime":self.tools.get_time()
                     }
-                    self.co["mh_pic_list"].insert(obj)
+                    if not self.tools.check_url_success(pic_url):
+                        self.co["mh_pic_list"].insert(obj)
+                        self.tools.marked_url_success(pic_url)
                 else:
                     loop = False
             

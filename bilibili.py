@@ -18,14 +18,14 @@ class Builder:
         self.tools.close_browser()
 
     # 获取某个用户的信息
-    def get_user_info(self,uid):
-        url = self.url_map("user",uid)
+    def get_user_info(self,url):
+        if self.tools.check_url_success(url):
+            return False
         dom = self.tools.get_dom_obj(url)
         # 解析dom页面
         avatar = dom.select("#h-avatar")[0].get("src")
         user_name = dom.select("#h-name")[0].string
         level = dom.select(".h-level")[0].get("lvl")
-        
         gender = dom.select("#h-gender")[0].get("class")
         if len(gender) == 3:
             if gender[2] == 'female':
@@ -73,13 +73,16 @@ class Builder:
             "fans":fans,
             "plays":plays
         }
-        self.close_browser()
+        self.tools.marked_url_success(url)
         return user_info
         
     def save_user_info(self,user_info):
         self.mongodb["users"]['bilibili'].insert(user_info)
     
     def run(self):
-        user_info = self.get_user_info(12355)  
-        self.save_user_info(user_info)
+        url = self.url_map("user",123456)
+        user_info = self.get_user_info(url)  
+        if user_info:
+            self.save_user_info(user_info)
         print(user_info)
+        self.close_browser()

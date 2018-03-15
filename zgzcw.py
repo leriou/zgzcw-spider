@@ -26,13 +26,25 @@ class Builder:
         self.get_list()
 
     def get_list(self):
-        url = self.get_module_url("list","2015-06-11")
-        match_list = self.analysis_list(url)
+        now = time.time() - (3600 * 12) # 
+        n = 0 # 抓取多少天的数据
+        loop = True
+        while loop:
+            date = time.strftime("%Y-%m-%d",time.localtime(now))
+            now -= 3600*24
+            print(date)
+            n += 1
+            loop = (n < 100)
+            url = self.get_module_url("list",date)
+            match_list = self.analysis_list(url)
+            if match_list:
+                self.mongodb["zgzcw"]["matches"].insert(match_list)
         self.tools.close_browser()
-        self.mongodb["zgzcw"]["matches"].insert(match_list)
     
     def analysis_list(self,url):
         match_list = []
+        if self.tools.check_url_success(url):
+            return False
         dom = self.tools.get_dom_obj(url)
         for tr in dom.select(".endBet") + dom.select(".beginBet"):
             odds = {}
@@ -67,6 +79,7 @@ class Builder:
                 "rates":bjop["rates"]
             }
             match_list.append(match)
+        self.tools.marked_url_success(url,True)
         return match_list 
 
     def get_bjop(self,newplayid):

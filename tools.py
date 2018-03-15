@@ -12,8 +12,9 @@ class Tools:
     def __init__(self):
         self.di = di.Di()
         self.redis = self.di.getRedis()
+        self.mongo = self.di.getMongoDb()
         self.browser = None
-        
+
         self.start = time.time()
         self.end = 0
 
@@ -49,21 +50,31 @@ class Tools:
 
     # 从html字符串获取dom对象
     def get_dom_by_html(self,html):
+        if html == None:
+            return False
         return BeautifulSoup(html, 'html.parser')
 
-    # 获取页面的dom对象
+    # 标记某个url处理成功
+    def marked_url_success(self,url,flag = 1):
+        self.redis.set("html:success:"+url,flag)
+
+    # 检查某个url是否成功
+    def check_url_success(self,url):
+        return self.redis.get("html:success:"+url)
+
+    # 获取页面的dom对象如果页面被缓存使用缓存
     def get_dom_obj(self, url, cached=True,browser=True):
         if cached:
-            cache_html  = self.redis.get(url)
-            if cache_html != None :
-                return self.get_dom_by_html(cache_html)
+            html = self.redis.get(url) # 获取缓存
+            if html != None :
+                return self.get_dom_by_html(html)
         if browser:
             data = self.browser_get_html(url)
         else:
             data = self.get_html(url)
         if data:
             if cached:
-                self.redis.set(url,data)
+                self.redis.set(url,data)  
             return self.get_dom_by_html(data)
         else:
             return False
