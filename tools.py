@@ -14,6 +14,7 @@ class Tools:
         self.redis = self.di.getRedis()
         self.mongo = self.di.getMongoDb()
         self.browser = None
+        self.cache = self.mongo["cached"]["urls"]
 
         self.start = time.time()
         self.end = 0
@@ -48,6 +49,17 @@ class Tools:
         self.browser.get(url)
         return self.browser.page_source
 
+    def mongo_set(self,url,data):
+        r = self.cache.find_one({"_url":url})
+        if r:
+            self.cache.update({"_url":url},{"$set":data})
+        else:
+            data["_url"] = url
+            self.cache.save(data)
+        
+    def mongo_get(self,url):
+        return self.cache.find_one({"_url":url})
+
     # 从html字符串获取dom对象
     def get_dom_by_html(self,html):
         if html == None:
@@ -56,25 +68,29 @@ class Tools:
 
     # 标记某个url处理成功
     def marked_url_success(self,url,flag = 1):
-        self.redis.set("html:success:"+url,flag)
+        self.mongo_set(url,{"success":flag})
 
     # 检查某个url是否成功
     def check_url_success(self,url):
-        return self.redis.get("html:success:"+url)
+        r = self.mongo_get(url)
+        if r and r.get("success"):
+            return r["success"]
+        return False
 
     # 获取页面的dom对象如果页面被缓存使用缓存
     def get_dom_obj(self, url, cached=True,browser=True):
         if cached:
-            html = self.redis.get(url) # 获取缓存
-            if html != None :
-                return self.get_dom_by_html(html)
+            r = self.mongo_get(url)
+            
+            if r != None and r.get("text") :
+                return self.get_dom_by_html(r["text"])
         if browser:
             data = self.browser_get_html(url)
         else:
             data = self.get_html(url)
         if data:
             if cached:
-                self.redis.set(url,data)  
+                self.mongo_set(url,{"text":data}) 
             return self.get_dom_by_html(data)
         else:
             return False

@@ -16,7 +16,6 @@ class Fzdm:
         self.tools = tools.Tools() #工具对象
         self.di = di.Di()
         self.mongodb = self.di.getMongoDb()
-        self.redis   = self.di.getRedis()
 
         self.co = self.mongodb["fzdm"] # 集合
         self.list_url = "http://manhua.fzdm.com"  # 风之动漫网址
@@ -24,7 +23,6 @@ class Fzdm:
         # 程序运行时间统计
         self.start = time.time()
         self.end = 0
-
 
     def cost(self, log=''):
         tmp = time.time()

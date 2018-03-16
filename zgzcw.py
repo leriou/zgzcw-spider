@@ -7,7 +7,6 @@ class Builder:
     def __init__(self):
         self.tools = tools.Tools()
         self.di = di.Di()
-        self.redis = self.di.getRedis()
         self.mongodb = self.di.getMongoDb()
 
         self.list_url = "http://cp.zgzcw.com/lottery/jchtplayvsForJsp.action?lotteryId=47&type=jcmini"

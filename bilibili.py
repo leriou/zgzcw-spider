@@ -1,6 +1,7 @@
 import di
 import tools
 from selenium import webdriver
+import time
 
 class Builder:
     
@@ -12,7 +13,7 @@ class Builder:
     # url map
     def url_map(self,flag,id):
         if flag == 'user':
-            return "https://space.bilibili.com/" + str(id)
+            return "https://space.bilibili.com/" + str(id)+"#/"
 
     def close_browser(self):
         self.tools.close_browser()
@@ -21,7 +22,7 @@ class Builder:
     def get_user_info(self,url):
         if self.tools.check_url_success(url):
             return False
-        dom = self.tools.get_dom_obj(url)
+        dom = self.tools.get_dom_obj(url,True)
         # 解析dom页面
         avatar = dom.select("#h-avatar")[0].get("src")
         user_name = dom.select("#h-name")[0].string
@@ -72,17 +73,19 @@ class Builder:
             "focus":focus,
             "fans":fans,
             "plays":plays
-        }
-        self.tools.marked_url_success(url)
+        }   
         return user_info
         
     def save_user_info(self,user_info):
         self.mongodb["users"]['bilibili'].insert(user_info)
     
     def run(self):
-        url = self.url_map("user",123456)
-        user_info = self.get_user_info(url)  
-        if user_info:
-            self.save_user_info(user_info)
-        print(user_info)
+        for uid in range(1,999999):
+            url = self.url_map("user",uid)
+            user_info = self.get_user_info(url)  
+            if user_info:
+                self.save_user_info(user_info)
+                self.tools.marked_url_success(url)
+            print(user_info)
+            time.sleep(0.5)
         self.close_browser()
