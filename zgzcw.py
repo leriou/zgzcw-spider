@@ -25,7 +25,7 @@ class Builder:
         self.get_list()
 
     def get_list(self):
-        now = time.time() - (3600 * 12) # 
+        now = time.time() - (3600 * 24*2) # 
         n = 0 # 抓取多少天的数据
         loop = True
         while loop:
@@ -38,6 +38,7 @@ class Builder:
             match_list = self.analysis_list(url)
             if match_list:
                 self.mongodb["zgzcw"]["matches"].insert(match_list)
+                print("处理%s数据%s条" % (date,len(match_list)))
         self.tools.close_browser()
     
     def analysis_list(self,url):
@@ -60,24 +61,25 @@ class Builder:
                     }
                 odds[od["rq"]] = (od)
             bjop = self.get_bjop(tr.select(".wh-10")[0].get("newplayid"))
-            match = {
-                "competition":tr.get("m"),
-                "match_start_time":tr.get("t"),
-                "match_date":bjop["match_date"],
-                "hostname":tr.select(".wh-4 a")[0].text,
-                "visitname":tr.select(".wh-6 a")[0].text,
-                "match_score_source":tr.select(".wh-5")[0].string.strip(),
-                "host_score":bjop["left_score"],
-                "visit_score":bjop["right_score"],
-                "match_result":bjop["match_result"],
-                "bjop":{
-                    "id":tr.select(".wh-10")[0].get("newplayid"),
-                    "url":bjop["url"]
-                },
-                "odds":odds,
-                "rates":bjop["rates"]
-            }
-            match_list.append(match)
+            if bjop:       
+                match = {
+                    "competition":tr.get("m"),
+                    "match_start_time":tr.get("t"),
+                    "match_date":bjop["match_date"],
+                    "hostname":tr.select(".wh-4 a")[0].text,
+                    "visitname":tr.select(".wh-6 a")[0].text,
+                    "match_score_source":tr.select(".wh-5")[0].string.strip(),
+                    "host_score":bjop["left_score"],
+                    "visit_score":bjop["right_score"],
+                    "match_result":bjop["match_result"],
+                    "bjop":{
+                        "id":tr.select(".wh-10")[0].get("newplayid"),
+                        "url":bjop["url"]
+                    },
+                    "odds":odds,
+                    "rates":bjop["rates"]
+                }
+                match_list.append(match)
         self.tools.marked_url_success(url,True)
         return match_list 
 
@@ -87,6 +89,8 @@ class Builder:
 
     def analysis_bjop(self,url):
         dom = self.tools.get_dom_obj(url)
+        if len(dom.select(".logoVs .host-name a")) == 0:
+            return False
         host_name = dom.select(".logoVs .host-name a")[0].string
         visit_name = dom.select(".logoVs .visit-name a")[0].string
         match_date = dom.select(".bfyc-duizhen-r .date span")[0].string

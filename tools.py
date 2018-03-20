@@ -45,7 +45,7 @@ class Tools:
     # 浏览器获取
     def browser_get_html(self,url):
         if self.browser == None:
-            self.browser = webdriver.Firefox()
+            self.browser = webdriver.Chrome()
         self.browser.get(url)
         return self.browser.page_source
 
