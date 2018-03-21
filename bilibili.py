@@ -86,6 +86,6 @@ class Builder:
             if user_info:
                 self.save_user_info(user_info)
                 self.tools.marked_url_success(url)
-            print(user_info)
+            self.tools.logging("INFO",user_info)
             time.sleep(0.5)
         self.close_browser()

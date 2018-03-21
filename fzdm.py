@@ -25,10 +25,7 @@ class Fzdm:
         self.end = 0
 
     def cost(self, log=''):
-        tmp = time.time()
-        total, last = tmp - self.start, tmp - self.end
-        self.end = tmp
-        print("%s 总消耗时间:%s s,距上次%s s" % (log, total, last))
+        self.tools.cost(log)
 
     def run(self):    # 主程序
         url = self.find_from_list(self.commic["name"])
@@ -131,4 +128,4 @@ class Fzdm:
                 pic = obj["pic_src"]
                 urllib.request.urlretrieve(pic, filename)
             except:
-                print("pic: %s request is timeout" % obj['pic_src'])
+                self.tools.logging("INFO","pic: %s request is timeout" % obj['pic_src'])

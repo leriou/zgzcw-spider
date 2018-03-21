@@ -118,4 +118,9 @@ class Tools:
         tmp = time.time()
         total, last = tmp - self.start, tmp - self.end
         self.end = tmp
-        print("%s 总消耗时间:%s s,距上次%s s" % (log, total, last))
+        self.logging("INFO","%s 总消耗时间:%s s,距上次%s s" % (log, total, last))
+
+    def logging(self,level,msg):
+        print("[%s] %s: %s" % (level,self.get_time(),msg))
+
+

@@ -31,14 +31,14 @@ class Builder:
         while loop:
             date = time.strftime("%Y-%m-%d",time.localtime(now))
             now -= 3600*24
-            print(date)
+            self.tools.logging("INFO",date)
             n += 1
             loop = (n < 100)
             url = self.get_module_url("list",date)
             match_list = self.analysis_list(url)
             if match_list:
                 self.mongodb["zgzcw"]["matches"].insert(match_list)
-                print("处理%s数据%s条" % (date,len(match_list)))
+                self.tools.cost("处理%s数据%s条" % (date,len(match_list)))
         self.tools.close_browser()
     
     def analysis_list(self,url):
@@ -144,5 +144,5 @@ class Builder:
             "right_score":right_score,
             "rates":rate_list
         }
-        print(host_name + " VS "+ visit_name + " done")
+        self.tools.logging("INFO",host_name + " VS "+ visit_name + ": success")
         return ret
