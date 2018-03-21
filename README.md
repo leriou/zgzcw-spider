@@ -12,13 +12,25 @@
 
 # 安装
 
-安装mongodb
+## 依赖
 
-使用mongodb作为基础数据库
+1. 浏览器驱动
 
-`brew install mongodb`: 安装mongodb
+使用了`selenium`来做页面上的js解析, 所以需要一个浏览器驱动,Chrome或者firefox都行
 
-使用了pipenv做依赖管理
+`chromedriver`: 谷歌浏览器驱动
+或
+`geckodriver`: 火狐浏览器驱动
+
+下载完成以后,放到系统环境变量里面就行了,可以放到 `/usr/bin`下面
+
+2. mongodb数据库
+
+`brew install mongodb`: 安装mongodb,使用mongodb作为基础数据库
+
+抓取的中间数据和解析过后的数据都使用mongodb进行存储
+
+3. pipenv
 
 `git clone`  下载项目
 
@@ -28,4 +40,4 @@
 
 `pipenv install`:  安装依赖
 
-`pipenv run main.py`: 运行代码
+`pipenv run python3 main.py`: 运行抓取中国足彩网的数据的代码
