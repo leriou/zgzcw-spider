@@ -1,6 +1,7 @@
 import di
 import tools
 import time
+import asyncio
 
 class Builder:
 
@@ -22,25 +23,32 @@ class Builder:
         return url
 
     def run(self):
-        self.get_list()
+        self.fix_data()
+        # self.get_list()
 
     def get_list(self):
-        now = time.time() - (3600 * 24*2) # 
+        now = time.time() - (3600 * 24 * 2) # 
         n = 0 # 抓取多少天的数据
         loop = True
+        # e_loop = asyncio.get_event_loop()
         while loop:
             date = time.strftime("%Y-%m-%d",time.localtime(now))
             now -= 3600*24
             self.tools.logging("INFO",date)
             n += 1
-            loop = (n < 100)
-            url = self.get_module_url("list",date)
-            match_list = self.analysis_list(url)
-            if match_list:
-                self.mongodb["zgzcw"]["matches"].insert(match_list)
-                self.tools.cost("处理%s数据%s条" % (date,len(match_list)))
+            loop = (n < 10000)
+            # e_loop.run_until_complete(self.get_list_by_date(date))
+            self.get_list_by_date(date)
+        # e_loop.close()
         self.tools.close_browser()
     
+    def get_list_by_date(self,date):
+        match_list = self.analysis_list(self.get_module_url("list",date))
+        if match_list:
+            self.mongodb["zgzcw"]["matches"].insert(match_list)
+            self.tools.cost("处理%s数据%s条" % (date,len(match_list)))
+            self.tools.mongo_clear_cache()
+            
     def analysis_list(self,url):
         match_list = []
         if self.tools.check_url_success(url):
@@ -124,16 +132,16 @@ class Builder:
                         "lost":tds[7].get("data")
                     },
                     "probability":{
-                        "win":tds[8].get("data"),
-                        "eq":tds[9].get("data"),
-                        "lost":tds[10].get("data"),
+                        "win":tds[9].get("data"),
+                        "eq":tds[10].get("data"),
+                        "lost":tds[11].get("data"),
                     },
                     "kelly_formula":{
-                        "win":tds[11].get("data"),
-                        "eq":tds[12].get("data"),
-                        "lost":tds[13].get("data"),
+                        "win":tds[12].get("data"),
+                        "eq":tds[13].get("data"),
+                        "lost":tds[14].get("data"),
                     },
-                    "odds":tds[14].get("data")
+                    "odds":tds[15].get("data")
                 }
                 rate_list[company] = rate_tr
         ret = {

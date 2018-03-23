@@ -45,7 +45,8 @@ class Tools:
     # 浏览器获取
     def browser_get_html(self,url):
         if self.browser == None:
-            self.browser = webdriver.Chrome()
+            self.browser = webdriver.Chrome()            
+            # self.browser = webdriver.Firefox()
         self.browser.get(url)
         return self.browser.page_source
 
@@ -59,6 +60,9 @@ class Tools:
         
     def mongo_get(self,url):
         return self.cache.find_one({"_url":url})
+
+    def mongo_clear_cache(self):
+        self.cache.update_many({},{"$set":{"text":""}})
 
     # 从html字符串获取dom对象
     def get_dom_by_html(self,html):
@@ -121,6 +125,4 @@ class Tools:
         self.logging("INFO","%s 总消耗时间:%s s,距上次%s s" % (log, total, last))
 
     def logging(self,level,msg):
-        print("[%s] %s: %s" % (level,self.get_time(),msg))
-
-
+        print("%s [%s]: %s" % (self.get_time(),level,msg))
