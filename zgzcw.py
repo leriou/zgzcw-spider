@@ -23,8 +23,7 @@ class Builder:
         return url
 
     def run(self):
-        self.fix_data()
-        # self.get_list()
+        self.get_list()
 
     def get_list(self):
         now = time.time() - (3600 * 24 * 2) # 

@@ -1,7 +1,7 @@
 import di
 import tools
 from selenium import webdriver
-import time
+import time,sys
 
 class Builder:
     
@@ -22,7 +22,7 @@ class Builder:
     def get_user_info(self,url):
         if self.tools.check_url_success(url):
             return False
-        dom = self.tools.get_dom_obj(url,True)
+        dom = self.tools.get_dom_obj(url)
         # 解析dom页面
         avatar = dom.select("#h-avatar")[0].get("src")
         user_name = dom.select("#h-name")[0].string
@@ -80,12 +80,14 @@ class Builder:
         self.mongodb["users"]['bilibili'].insert(user_info)
     
     def run(self):
-        for uid in range(1,999999):
-            url = self.url_map("user",uid)
-            user_info = self.get_user_info(url)  
-            if user_info:
-                self.save_user_info(user_info)
-                self.tools.marked_url_success(url)
+        if len(sys.argv) >= 2:
+            uid = sys.argv[1]
+        else:
+            uid = 1 
+        url = self.url_map("user",uid)
+        user_info = self.get_user_info(url)  
+        if user_info:
             self.tools.logging("INFO",user_info)
-            time.sleep(0.5)
+            self.save_user_info(user_info)
+            self.tools.marked_url_success(url)
         self.close_browser()

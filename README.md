@@ -41,3 +41,11 @@
 `pipenv install`:  安装依赖
 
 `pipenv run python3 main.py`: 运行抓取中国足彩网的数据的代码
+
+## usage
+
+`pipenv run python3 bilibili_main.py 123 ` 抓取bilibili用户123的数据
+
+`pipenv run python3 fzdm_main.py 进击的巨人` 抓取进击的巨人动画的数据
+
+

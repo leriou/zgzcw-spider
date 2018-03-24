@@ -15,9 +15,8 @@ class Tools:
         self.mongo = self.di.getMongoDb()
         self.browser = None
         self.cache = self.mongo["cached"]["urls"]
-
         self.start = time.time()
-        self.end = 0
+        self.end = time.time()
 
     # 从url获取页面内容
     def get_html(self, url):
