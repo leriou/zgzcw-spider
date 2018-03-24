@@ -1,6 +1,7 @@
 import di
 import tools
 import time
+import sys
 import asyncio
 
 class Builder:
@@ -23,25 +24,29 @@ class Builder:
         return url
 
     def run(self):
-        self.get_list()
+        if len(sys.argv) >= 2:
+            date = sys.argv[1]
+            limit = sys.argv[2]
+        else:
+            date = None
+        self.get_list(date)
 
-    def get_list(self):
-        now = time.time() - (3600 * 24 * 2) # 
-        n = 0 # 抓取多少天的数据
-        loop = True
-        # e_loop = asyncio.get_event_loop()
-        while loop:
-            date = time.strftime("%Y-%m-%d",time.localtime(now))
-            now -= 3600*24
-            self.tools.logging("INFO",date)
-            n += 1
-            loop = (n < 10000)
-            # e_loop.run_until_complete(self.get_list_by_date(date))
+    def get_list(self,date = None,limit = 320):
+        if date != None:
             self.get_list_by_date(date)
-        # e_loop.close()
+        else:
+            now = time.time() - (3600 * 24 * 320) # 
+            loop = True
+            while loop:
+                date = time.strftime("%Y-%m-%d",time.localtime(now))
+                now -= 3600*24
+                limit -= 1
+                loop = (limit > 0)
+                self.get_list_by_date(date)
         self.tools.close_browser()
     
     def get_list_by_date(self,date):
+        self.tools.logging("INFO","------"+ date + "------")
         match_list = self.analysis_list(self.get_module_url("list",date))
         if match_list:
             self.mongodb["zgzcw"]["matches"].insert(match_list)
@@ -50,27 +55,28 @@ class Builder:
             
     def analysis_list(self,url):
         match_list = []
-        if self.tools.check_url_success(url):
-            return False
+        # if self.tools.check_url_success(url):
+        #     return False
         dom = self.tools.get_dom_obj(url)
         for tr in dom.select(".endBet") + dom.select(".beginBet"):
-            odds = {}
-            for wh in tr.select(".wh-8 .tz-area"):
-                if wh.select("a")[0].text == "未开售":
-                    od = {"rq":wh.select(".rq")[0].string,"odds":"未开售"}
-                else:     
-                    od = {
-                        "rq":wh.select(".rq")[0].string,
-                        "odds":"",
-                        "win":wh.select("a")[0].text,
-                        "eq":wh.select("a")[1].text,
-                        "lost":wh.select("a")[2].text
-                    }
-                odds[od["rq"]] = (od)
             bjop = self.get_bjop(tr.select(".wh-10")[0].get("newplayid"))
-            if bjop:       
+            if bjop:
+                odds = {}
+                for wh in tr.select(".wh-8 .tz-area"):
+                    if wh.select("a")[0].text == "未开售":
+                        od = {"rq":wh.select(".rq")[0].string,"odds":False}
+                    else:     
+                        od = {
+                            "rq":wh.select(".rq")[0].string,
+                            "odds":True,
+                            "win":wh.select("a")[0].text,
+                            "eq":wh.select("a")[1].text,
+                            "lost":wh.select("a")[2].text
+                        }
+                    odds[od["rq"]] = (od)       
                 match = {
                     "competition":tr.get("m"),
+                    "list_url":url,
                     "match_start_time":tr.get("t"),
                     "match_date":bjop["match_date"],
                     "hostname":tr.select(".wh-4 a")[0].text,
@@ -87,14 +93,15 @@ class Builder:
                     "rates":bjop["rates"]
                 }
                 match_list.append(match)
-        self.tools.marked_url_success(url,True)
+        # self.tools.marked_url_success(url,True)
         return match_list 
 
     def get_bjop(self,newplayid):
-        url = self.get_module_url("bjop",newplayid)
-        return self.analysis_bjop(url)
+        return self.analysis_bjop(self.get_module_url("bjop",newplayid))
 
     def analysis_bjop(self,url):
+        if self.check_bjop_done(url):
+            return False
         dom = self.tools.get_dom_obj(url)
         if len(dom.select(".logoVs .host-name a")) == 0:
             return False
@@ -153,3 +160,6 @@ class Builder:
         }
         self.tools.logging("INFO",host_name + " VS "+ visit_name + ": success")
         return ret
+    
+    def check_bjop_done(self,url):
+        return self.mongodb["zgzcw"]["matches"].find_one({"bjop.url":url})

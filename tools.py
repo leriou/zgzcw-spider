@@ -115,7 +115,13 @@ class Tools:
         fh.close()
 
     def get_time(self):
-        return time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
+        return self.time2str(time.time())
+    
+    def str2time(self,i):
+        return time.mktime(time.strptime(i,"%Y-%m-%d %H:%M:%S"))
+    
+    def time2str(self,moment):
+        return time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(moment))
         
     def cost(self, log=''):
         tmp = time.time()
