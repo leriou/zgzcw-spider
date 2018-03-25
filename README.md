@@ -48,4 +48,4 @@
 
 `pipenv run python3 fzdm_main.py 进击的巨人` 抓取进击的巨人动画的数据
 
-
+`pipenv run python3 main.py 2018-01-07`

@@ -1,8 +1,8 @@
 import di
 import tools
 import time
-import sys
-import asyncio
+import sys,os
+from multiprocessing import Pool
 
 class Builder:
 
@@ -10,7 +10,6 @@ class Builder:
         self.tools = tools.Tools()
         self.di = di.Di()
         self.mongodb = self.di.getMongoDb()
-
         self.list_url = "http://cp.zgzcw.com/lottery/jchtplayvsForJsp.action?lotteryId=47&type=jcmini"
         self.bjop_url = "http://fenxi.zgzcw.com/"
 
@@ -35,7 +34,7 @@ class Builder:
         if date != None:
             self.get_list_by_date(date)
         else:
-            now = time.time() - (3600 * 24 * 320) # 
+            now = time.time() - (3600 * 24 * 223) # 
             loop = True
             while loop:
                 date = time.strftime("%Y-%m-%d",time.localtime(now))
@@ -47,18 +46,20 @@ class Builder:
     
     def get_list_by_date(self,date):
         self.tools.logging("INFO","------"+ date + "------")
-        match_list = self.analysis_list(self.get_module_url("list",date))
+        url = self.get_module_url("list",date)
+        match_list = self.analysis_list(url)
         if match_list:
             self.mongodb["zgzcw"]["matches"].insert(match_list)
             self.tools.cost("处理%s数据%s条" % (date,len(match_list)))
             self.tools.mongo_clear_cache()
-            
+
+    
     def analysis_list(self,url):
         match_list = []
         # if self.tools.check_url_success(url):
         #     return False
         dom = self.tools.get_dom_obj(url)
-        for tr in dom.select(".endBet") + dom.select(".beginBet"):
+        for tr in dom.select(".endBet") + dom.select(".beginBet"):    
             bjop = self.get_bjop(tr.select(".wh-10")[0].get("newplayid"))
             if bjop:
                 odds = {}
