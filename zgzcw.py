@@ -34,7 +34,7 @@ class Builder:
         if date != None:
             self.get_list_by_date(date)
         else:
-            now = time.time() - (3600 * 24 * 223) # 
+            now = time.time() - (3600 * 24 * 3) # 
             loop = True
             while loop:
                 date = time.strftime("%Y-%m-%d",time.localtime(now))
@@ -53,7 +53,6 @@ class Builder:
             self.tools.cost("处理%s数据%s条" % (date,len(match_list)))
             self.tools.mongo_clear_cache()
 
-    
     def analysis_list(self,url):
         match_list = []
         # if self.tools.check_url_success(url):
@@ -86,6 +85,7 @@ class Builder:
                     "host_score":bjop["left_score"],
                     "visit_score":bjop["right_score"],
                     "match_result":bjop["match_result"],
+                    "created_time":self.tools.get_time(),
                     "bjop":{
                         "id":tr.select(".wh-10")[0].get("newplayid"),
                         "url":bjop["url"]
