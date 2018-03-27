@@ -91,7 +91,8 @@ class Builder:
                         "url":bjop["url"]
                     },
                     "odds":odds,
-                    "rates":bjop["rates"]
+                    "rates":bjop["rates"],
+                    "estimate":self.estimate(bjop["rates"])
                 }
                 match_list.append(match)
         # self.tools.marked_url_success(url,True)
@@ -157,10 +158,31 @@ class Builder:
             "match_result":m_ret,
             "left_score":left_score,
             "right_score":right_score,
-            "rates":rate_list
+            "rates":rate_list,
         }
         self.tools.logging("INFO",host_name + " VS "+ visit_name + ": success")
         return ret
     
     def check_bjop_done(self,url):
         return self.mongodb["zgzcw"]["matches"].find_one({"bjop.url":url})
+
+    def estimate(self,data): # 根据历史记录统计某赔率下的胜率
+        arr = ["Interwetten","竞彩官方(胜平负)"]
+        rt = {}
+        for key in arr:
+            if data.get(key):
+                rs = self.mongodb["zgzcw"]["matches"].find({
+                    "rates."+key+".begin":data[key]["begin"]
+                })
+                ret = {
+                    "0":0,
+                    "1":0,
+                    "3":0
+                }
+                for r in rs:
+                    ret[str(r["match_result"])] += 1
+                rt[key] = ret
+        return rt
+                
+        
+        
