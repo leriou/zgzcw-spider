@@ -30,11 +30,11 @@ class Builder:
             date = None
         self.get_list(date)
 
-    def get_list(self,date = None,limit = 320):
+    def get_list(self,date = None,limit = 10000):
         if date != None:
             self.get_list_by_date(date)
         else:
-            now = time.time() - (3600 * 24 * 3) # 
+            now = time.time() - (3600 * 24 * 5) # 
             loop = True
             while loop:
                 date = time.strftime("%Y-%m-%d",time.localtime(now))

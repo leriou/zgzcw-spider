@@ -14,7 +14,7 @@ class Tools:
         self.redis = self.di.getRedis()
         self.mongo = self.di.getMongoDb()
         self.browser = None
-        self.cache = self.mongo["cached"]["urls"]
+        self.cache = self.mongo["zgzcw"]["urls"]
         self.start = time.time()
         self.end = time.time()
 
@@ -84,7 +84,6 @@ class Tools:
     def get_dom_obj(self, url, cached=True,browser=True):
         if cached:
             r = self.mongo_get(url)
-            
             if r != None and r.get("text") :
                 return self.get_dom_by_html(r["text"])
         if browser:
@@ -127,7 +126,7 @@ class Tools:
         tmp = time.time()
         total, last = tmp - self.start, tmp - self.end
         self.end = tmp
-        self.logging("INFO","%s 总消耗时间:%s s,距上次%s s" % (log, total, last))
+        self.logging("INFO"," %s cost time: %s s, until lastest %s s" % (log, total, last))
 
     def logging(self,level,msg):
         print("%s [%s]: %s" % (self.get_time(),level,msg))
