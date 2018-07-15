@@ -4,7 +4,7 @@ import time
 import sys,os
 from multiprocessing import Pool
 
-class Builder:
+class Zgzcw:
 
     def __init__(self):
         self.tools = tools.Tools()
@@ -23,9 +23,9 @@ class Builder:
         return url
 
     def run(self):
-        if len(sys.argv) >= 2:
-            date = sys.argv[1]
-            limit = sys.argv[2]
+        if len(sys.argv) >= 3:
+            date = sys.argv[2]
+            limit = sys.argv[3]
         else:
             date = None
         self.get_list(date)

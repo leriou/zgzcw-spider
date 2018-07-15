@@ -3,7 +3,7 @@ import tools
 from selenium import webdriver
 import time,sys
 
-class Builder:
+class Bilibili:
     
     def __init__(self):
         self.tools = tools.Tools()

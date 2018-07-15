@@ -11,7 +11,6 @@ class Tools:
     
     def __init__(self):
         self.di = di.Di()
-        self.redis = self.di.getRedis()
         self.mongo = self.di.getMongoDb()
         self.browser = None
         self.cache = self.mongo["zgzcw"]["urls"]
