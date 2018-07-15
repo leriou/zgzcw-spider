@@ -80,8 +80,8 @@ class Bilibili:
         self.mongodb["users"]['bilibili'].insert(user_info)
     
     def run(self):
-        if len(sys.argv) >= 2:
-            uid = sys.argv[1]
+        if len(sys.argv) >= 3:
+            uid = sys.argv[2]
         else:
             uid = 1 
         url = self.url_map("user",uid)

@@ -4,11 +4,11 @@
 
 # 介绍
 
-`bilibili_main.py`: 抓取哔哩哔哩用户的个人信息页面数据
+`bilibili.py`: 抓取哔哩哔哩用户的个人信息页面数据
 
-`fzdm_main.py`: 抓取风之动漫网站的动漫数据
+`fzdm.py`: 抓取风之动漫网站的动漫数据
 
-`main.py`: 抓取中国足彩网的数据
+`zgzcw.py`: 抓取中国足彩网的数据
 
 # 安装
 
@@ -44,8 +44,8 @@
 
 ## usage
 
-`pipenv run python3 bilibili_main.py 123 ` 抓取bilibili用户123的数据
+`pipenv run python3 main.py bilibili 123` 抓取bilibili用户123的数据
 
-`pipenv run python3 fzdm_main.py 进击的巨人` 抓取进击的巨人动画的数据
+`pipenv run python3 main.py fzdm 进击的巨人` 抓取进击的巨人动画的数据
 
-`pipenv run python3 main.py 2018-01-07`
+`pipenv run python3 main.py zgzcw 2018-01-07`
