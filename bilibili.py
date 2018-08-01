@@ -21,7 +21,7 @@ class Bilibili:
         self.tools.close_browser()
 
     # 获取某个用户的信息
-    def get_user_info(self,url):
+    def get_user_info(self,url,save_user = True):
         if self.tools.check_url_success(url):
             return False
         dom = self.tools.get_dom_obj(url)
@@ -54,7 +54,6 @@ class Bilibili:
         plays = 0
         if dom.select(".n-statistics .n-bf"):
             plays = dom.select(".n-statistics .n-bf")[0].get("title").replace(",","")
-           
         user_info = {
             "avatar":avatar,
             "username":username,
@@ -71,6 +70,9 @@ class Bilibili:
             "fans":fans,
             "plays":plays
         }   
+        self.tools.logging("INFO",user_info)
+        if save_user:
+            self.save_user_info(user_info)
         return user_info
         
     def save_user_info(self,user_info):
@@ -83,7 +85,5 @@ class Bilibili:
         url = self.url_map("user",uid)
         user_info = self.get_user_info(url)
         if user_info:
-            self.tools.logging("INFO",user_info)
-            self.save_user_info(user_info)
             self.tools.marked_url_success(url)
         self.close_browser()

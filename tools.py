@@ -44,7 +44,6 @@ class Tools:
     def browser_get_html(self,url):
         if self.browser == None:
             self.browser = webdriver.Chrome()            
-            # self.browser = webdriver.Firefox()
         self.browser.get(url)
         return self.browser.page_source
 
@@ -107,7 +106,7 @@ class Tools:
             return newpath
 
     # 往某文件写入内容
-    def log(self,filename,content):
+    def log_to_file(self,filename,content):
         fh = open(filename,"w+")
         fh.write(content)
         fh.close()
