@@ -9,6 +9,8 @@ class Bilibili:
         self.tools = tools.Tools()
         self.di = di.Di()
         self.mongodb = self.di.getMongoDb()
+        self.tools.cache = self.mongodb["bilibili"]["local_url_cache"]
+        self.user_db = self.mongodb["bilibili"]['users']
        
     # url map
     def url_map(self,flag,id):
@@ -25,16 +27,13 @@ class Bilibili:
         dom = self.tools.get_dom_obj(url)
         # 解析dom页面
         avatar = dom.select("#h-avatar")[0].get("src")
-        user_name = dom.select("#h-name")[0].string
+        username = dom.select("#h-name")[0].string
         level = dom.select(".h-level")[0].get("lvl")
         gender = dom.select("#h-gender")[0].get("class")
         if len(gender) == 3:
-            if gender[2] == 'female':
-                gender = "女"
-            elif gender[2] == 'male':
-                gender = "男"
+            gender = gender[2]
         else:
-            gender = "未知"
+            gender = ""
         vip = dom.select(".h-vipType")[0].get("class")
         if len(vip) == 2:
             if vip[1] == 'normal-v':
@@ -43,33 +42,31 @@ class Bilibili:
                 vip = "年费大会员"
         elif len(vip) == 1:
             vip = "否"
-        sign = dom.select(".h-sign")[0].string.strip()
-        uid = dom.select(".section .uid span")[1].string
-        reg_time =  dom.select(".section .regtime span")[1].string.strip()
-        birthday = dom.select(".section .birthday span")[1].string.strip()
-        address =  dom.select(".section .geo span")[1].string.strip()
-        videos = dom.find(href="#/video").select("span")[2].string # 投稿
 
-        n_statistics = dom.select(".n-statistics")[0]
-        focus =  n_statistics.select("#n-gz")[0].string  # 关注数
-        fans =   n_statistics.select("#n-fs")[0].string  # 粉丝数
-        if len(n_statistics.select("#n-bf")) == 1:
-            plays = n_statistics.select("#n-bf")[0].string   # 播放数
-        else:
-            plays = 0
-            
+        sign = dom.select(".h-sign")[0].string.strip()
+        uid = dom.select(".user .uid .text")[0].string.strip()
+        regtime =  dom.select(".user .regtime .text")[0].string.strip().strip("注册于 ")
+        birthday = dom.select(".user .birthday .text")[0].string.strip()
+        videos = dom.select(".n-video .n-num")[0].string 
+        favlist = dom.select(".n-favlist .n-num")[0].string.strip()
+        focus =dom.select(".n-statistics .n-gz")[0].get("title").replace(",","")  
+        fans = dom.select(".n-statistics .n-fs")[0].get("title").replace(",","")
+        plays = 0
+        if dom.select(".n-statistics .n-bf"):
+            plays = dom.select(".n-statistics .n-bf")[0].get("title").replace(",","")
+           
         user_info = {
             "avatar":avatar,
-            "username":user_name,
+            "username":username,
             "gender":gender,
             "level":level,
             "vip":vip,
             "sign":sign,
             "uid":uid,
-            "regtime":reg_time,
+            "regtime":regtime,
             "birthday":birthday,
-            "address":address,
             "videos":videos,
+            "favlist":favlist,
             "focus":focus,
             "fans":fans,
             "plays":plays
@@ -77,15 +74,14 @@ class Bilibili:
         return user_info
         
     def save_user_info(self,user_info):
-        self.mongodb["users"]['bilibili'].insert(user_info)
+        self.user_db.insert(user_info)
     
     def run(self):
+        uid = 1
         if len(sys.argv) >= 3:
             uid = sys.argv[2]
-        else:
-            uid = 1 
         url = self.url_map("user",uid)
-        user_info = self.get_user_info(url)  
+        user_info = self.get_user_info(url)
         if user_info:
             self.tools.logging("INFO",user_info)
             self.save_user_info(user_info)

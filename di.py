@@ -7,7 +7,6 @@ from pymongo import MongoClient
 class Di:
 
     def __init__(self):
-        Di.redis = None
         Di.mongodb = None
 
     # mongodb client 

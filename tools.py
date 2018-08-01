@@ -13,7 +13,7 @@ class Tools:
         self.di = di.Di()
         self.mongo = self.di.getMongoDb()
         self.browser = None
-        self.cache = self.mongo["zgzcw"]["urls"]
+        self.cache = self.mongo["local"]["urls"]
         self.start = time.time()
         self.end = time.time()
 

@@ -10,6 +10,7 @@ class Zgzcw:
         self.tools = tools.Tools()
         self.di = di.Di()
         self.mongodb = self.di.getMongoDb()
+        self.tools.cache = self.mongodb["zgzcw"]["local_url"]
         self.list_url = "http://cp.zgzcw.com/lottery/jchtplayvsForJsp.action?lotteryId=47&type=jcmini"
         self.bjop_url = "http://fenxi.zgzcw.com/"
 
