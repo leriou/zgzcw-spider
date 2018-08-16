@@ -13,7 +13,7 @@ class Tools:
         self.di = di.Di()
         self.mongo = self.di.getMongoDb()
         self.browser = None
-        self.cache = self.mongo["local"]["urls"]
+        self.cache = self.mongo["local_cache"]["urls"]
         self.start = time.time()
         self.end = time.time()
 
@@ -107,9 +107,8 @@ class Tools:
 
     # 往某文件写入内容
     def log_to_file(self,filename,content):
-        fh = open(filename,"w+")
-        fh.write(content)
-        fh.close()
+        with open(filename,"w+") as fh:
+            fh.write(content)
 
     def get_time(self):
         return self.time2str(time.time())
