@@ -10,7 +10,7 @@
 
 `zgzcw.py`: 抓取中国足彩网的数据
 
-# 安装
+# 安装(Mac OS)
 
 ## 依赖
 
@@ -18,7 +18,7 @@
 
 使用了`selenium`来做页面上的js解析, 所以需要一个浏览器驱动,Chrome或者firefox都行
 
-`chromedriver`: 谷歌浏览器驱动
+`chromedriver`: 谷歌浏览器驱动(推荐, 速度比firefox快一点)
 或
 `geckodriver`: 火狐浏览器驱动
 
@@ -32,7 +32,7 @@
 
 3. pipenv
 
-`git clone`  下载项目
+`git clone `  下载项目
 
 `cd zgzcw_spider`:   进入项目目录
 
@@ -40,9 +40,9 @@
 
 `pipenv install`:  安装依赖
 
-`pipenv run python3 main.py`: 运行抓取中国足彩网的数据的代码
+`pipenv run python3 main.py zgzcw`: 运行抓取中国足彩网的数据的代码
 
-## usage
+## Usage
 
 `pipenv run python3 main.py bilibili 123` 抓取bilibili用户123的数据
 
