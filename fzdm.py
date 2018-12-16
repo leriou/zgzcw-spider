@@ -26,7 +26,7 @@ class Fzdm:
 
     def run(self):    # 主程序
         self.get_manhua_list()
-        # self.get_sub_list()
+        self.get_sub_list()
         self.analyse_sub()
         self.tools.close_browser()
         self.cost("下载完成")
@@ -56,7 +56,10 @@ class Fzdm:
     更新所有漫画章节信息
     """
     def get_sub_list(self):  # 获取漫画子列表页面的每一话地址
-        for i in self.co["mh_list"].find({}):
+        condition = {}
+        if len(sys.argv) == 3:
+            condition["name"] = sys.argv[2]
+        for i in self.co["mh_list"].find(condition):
             url = i["commic_url"]
             soup = self.tools.get_dom_obj(url)
             li_list = soup.find_all("li", "pure-u-1-2 pure-u-lg-1-4")
