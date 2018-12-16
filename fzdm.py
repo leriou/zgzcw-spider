@@ -88,7 +88,7 @@ class Fzdm:
             loop = True
             current_url = s['sub_url']  # 当前页面的具体地址
             while loop:
-                self.cost("第"+ str(page_n+1) + "话")
+                self.cost("第"+ str(page_n+1) + "页")
                 page = self.tools.get_dom_obj(current_url, True)
                 pic_url = current_url
                 if page:

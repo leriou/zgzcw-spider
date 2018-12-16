@@ -53,6 +53,8 @@ class Tools:
             self.cache.update({"_url":url},{"$set":data})
         else:
             data["_url"] = url
+            data["datetime"] = self.get_time()
+            data["timestamp"] = time.time()
             self.cache.save(data)
         
     def mongo_get(self,url):
