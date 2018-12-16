@@ -80,7 +80,7 @@ class Bilibili:
     
     def run(self):
         uid = 1
-        if len(sys.argv) >= 3:
+        if len(sys.argv) == 3:
             uid = sys.argv[2]
         url = self.url_map("user",uid)
         user_info = self.get_user_info(url)

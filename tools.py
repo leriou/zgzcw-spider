@@ -79,7 +79,7 @@ class Tools:
         return False
 
     # 获取页面的dom对象如果页面被缓存使用缓存
-    def get_dom_obj(self, url, cached=True,browser=True):
+    def get_dom_obj(self, url, cached=True, browser=True):
         if cached:
             r = self.mongo_get(url)
             if r != None and r.get("text") :

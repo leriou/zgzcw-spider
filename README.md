@@ -22,6 +22,8 @@
 或
 `geckodriver`: 火狐浏览器驱动
 
+下载地址: http://npm.taobao.org/mirrors/chromedriver
+
 下载完成以后,放到系统环境变量里面就行了,可以放到 `/usr/bin`下面
 
 2. mongodb数据库
@@ -30,22 +32,18 @@
 
 抓取的中间数据和解析过后的数据都使用mongodb进行存储
 
-3. pipenv
+3. pip依赖
 
-`git clone `  下载项目
+`git clone xxx`  下载项目
 
 `cd zgzcw_spider`:   进入项目目录
 
-`pip install pipenv`:  安装pipenv
-
-`pipenv install`:  安装依赖
-
-`pipenv run python3 main.py zgzcw`: 运行抓取中国足彩网的数据的代码
+`pip3 install -r requirements.txt`:  安装依赖
 
 ## Usage
 
-`pipenv run python3 main.py bilibili 123` 抓取bilibili用户123的数据
+`python3 main.py bilibili 123` 抓取bilibili用户123的数据
 
-`pipenv run python3 main.py fzdm 进击的巨人` 抓取进击的巨人动画的数据
+`python3 main.py fzdm 进击的巨人` 抓取进击的巨人动画的数据
 
-`pipenv run python3 main.py zgzcw 2018-01-07`
+`python3 main.py zgzcw 2018-01-07` 抓取某一天的彩票数据
