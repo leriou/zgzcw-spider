@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import tools
-import urllib.request
 import time
 import sys
 import os
@@ -125,17 +124,3 @@ class Fzdm:
             url = 'http:' + pic
         return url
 
-    def down_obj(self, obj):  # 下载漫画
-        root_dic = self.commic["name"]
-        r_path = self.tools.open_dir(root_dic)  # 作品目录
-        s_path = os.path.join(r_path, obj['sub_name'])
-        if not os.path.isdir(s_path):
-            os.mkdir(s_path)
-       
-        filename = s_path + "/" + obj['sub_name'] + "_" + str(obj['pic_num']) + ".jpg"
-        if not os.path.exists(filename):
-            try:
-                pic = obj["pic_src"]
-                urllib.request.urlretrieve(pic, filename)
-            except:
-                self.tools.logging("INFO","pic: %s request is timeout" % obj['pic_src'])
