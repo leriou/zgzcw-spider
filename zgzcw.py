@@ -19,7 +19,7 @@ class Zgzcw:
             limit_day: 抓取多少天然后停止
         """
         self.offset_time = 3600 * 24 * 5 
-        self.limit_day = 100 
+        self.limit_day = 365 * 5 
 
     def _init_data(self):
         self.list_url = "http://cp.zgzcw.com/lottery/jchtplayvsForJsp.action?lotteryId=47&type=jcmini"
