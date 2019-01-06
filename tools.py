@@ -68,7 +68,7 @@ class Tools:
             data["_url"] = url
             data["datetime"] = self.get_time()
             data["timestamp"] = time.time()
-            self.cache.save(data)
+            self.cache.insert_one(data)
         
     def mongo_get(self,url):
         return self.cache.find_one({"_url":url})
