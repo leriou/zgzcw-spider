@@ -4,10 +4,6 @@
 
 # 介绍
 
-`bilibili.py`: 抓取哔哩哔哩用户的个人信息页面数据
-
-`fzdm.py`: 抓取风之动漫网站的动漫数据
-
 `zgzcw.py`: 抓取中国足彩网的数据
 
 # 安装(Mac OS)
@@ -42,8 +38,4 @@
 
 ## Usage
 
-`python3 main.py bilibili 123` 抓取bilibili用户123的数据
-
-`python3 main.py fzdm 进击的巨人` 抓取进击的巨人动画的数据
-
-`python3 main.py zgzcw 2018-01-07` 抓取某一天的彩票数据
+`python3 main.py 2018-01-07` 抓取某一天的彩票数据

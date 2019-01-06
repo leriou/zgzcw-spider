@@ -1,5 +1,4 @@
 pymongo
-redis
 beautifulsoup4
 requests
 selenium

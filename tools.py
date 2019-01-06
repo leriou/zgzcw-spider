@@ -2,29 +2,40 @@
 # -*- coding: utf-8 -*-
 import urllib.request
 import os
-import di
 import time
 from bs4 import BeautifulSoup
 from selenium import webdriver
+from pymongo import MongoClient
+import random
+
 
 class Tools:
     
     def __init__(self):
-        self.di = di.Di()
-        self.mongo = self.di.getMongoDb()
         self.browser = None
-        self.cache = self.mongo["local_cache"]["urls"]
+        self.sleep = False
+        self.rand_floor = 0
+        self.rand_ceil = 3
         self.start = time.time()
         self.end = time.time()
-
+        self.mongo = None
+    
+    def get_mongodb(self):
+        if self.mongo == None:
+            self.mongo = MongoClient('127.0.0.1', 27017)
+        return self.mongo
+    
+    def set_cache(self, db, collection):
+        self.cache = self.mongo[db][collection]
+    
     # 从url获取页面内容
     def get_html(self, url):
         try:
             times = 3    
             while times > 0:
                 param_data = {"User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.186 Safari/537.36"}
-                response = requests.get(url,params=param_data)
-                times = times - 1
+                response = requests.get(url, params=param_data)
+                times -= 1
                 if response.status_code == 200:
                     times = False
             if response.status_code == 200:
@@ -41,16 +52,18 @@ class Tools:
             self.browser.close()
 
     # 浏览器获取
-    def browser_get_html(self,url):
+    def browser_get_html(self, url):
         if self.browser == None:
-            self.browser = webdriver.Chrome()            
+            self.browser = webdriver.Chrome()     
+        if self.sleep:
+            time.sleep(self.get_random_num(self.rand_floor, self.rand_ceil))
         self.browser.get(url)
         return self.browser.page_source
 
-    def mongo_set(self,url,data):
-        r = self.cache.find_one({"_url":url})
+    def mongo_set(self, url, data):
+        r = self.cache.find_one({"_url": url})
         if r:
-            self.cache.update({"_url":url},{"$set":data})
+            self.cache.update({"_url":url}, {"$set":data})
         else:
             data["_url"] = url
             data["datetime"] = self.get_time()
@@ -129,3 +142,6 @@ class Tools:
 
     def logging(self,level,msg):
         print("%s [%s]: %s" % (self.get_time(),level,msg))
+
+    def get_random_num(self, start=0, end=1):
+        return random.random() * (end - start) + start

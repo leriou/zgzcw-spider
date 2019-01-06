@@ -1,22 +1,38 @@
-import di
 import tools
 import time
-import sys,os
-from multiprocessing import Pool
+import sys
+import os
 
 class Zgzcw:
 
     def __init__(self):
         self.tools = tools.Tools()
-        self.di = di.Di()
-        self.mongodb = self.di.getMongoDb()
-        self.tools.cache = self.mongodb["zgzcw"]["local_url"]
+
+        self.dbname = "zgzcw"
+        self.cache_collection = "tmp-url"
+        self.data_collection = "data"
+        self.log_collection = "log"
+        
+        """
+            params:
+            offset_time: 从当前时间多久前开始抓数据, 今天的比赛还没有出结果
+            limit_day: 抓取多少天然后停止
+        """
+        self.offset_time = 3600 * 24 * 5 
+        self.limit_day = 100 
+
+    def _init_data(self):
         self.list_url = "http://cp.zgzcw.com/lottery/jchtplayvsForJsp.action?lotteryId=47&type=jcmini"
         self.bjop_url = "http://fenxi.zgzcw.com/"
-
         self.company_list = ["Interwetten","竞彩官方(胜平负)","威廉希尔","伟德(直布罗陀)","立博","澳门","Bet365","香港马会"]
+
+        self.mongodb = self.tools.get_mongodb()
+        self.tools.set_cache(self.dbname, self.cache_collection)
+        self.db    = self.mongodb[self.dbname][self.data_collection]
+        self.logdb = self.mongodb[self.dbname][self.log_collection]
+        
     # 获取url
-    def get_module_url(self,module,params):
+    def get_module_url(self, module, params):
         if module == "bjop":
             url = self.bjop_url + str(params) +"/bjop"
         elif module == 'list':
@@ -24,40 +40,49 @@ class Zgzcw:
         return url
 
     def run(self):
-        if len(sys.argv) >= 3:
-            date = sys.argv[2]
-            limit = sys.argv[3]
+        if len(sys.argv) >= 2:
+            date = sys.argv[1]
         else:
             date = None
+        self._init_data()
         self.get_list(date)
 
-    def get_list(self,date = None,limit = 10000):
+    def get_list(self,date = None):
         if date != None:
             self.get_list_by_date(date)
         else:
-            now = time.time() - (3600 * 24 * 5) # 
+            now = time.time() - self.offset_time 
+            limit = self.limit_day
             loop = True
             while loop:
-                date = time.strftime("%Y-%m-%d",time.localtime(now))
+                date = time.strftime("%Y-%m-%d", time.localtime(now))
                 now -= 3600*24
                 limit -= 1
                 loop = (limit > 0)
-                self.get_list_by_date(date)
+                if not self.date_has_done(date):
+                    self.get_list_by_date(date)
         self.tools.close_browser()
     
     def get_list_by_date(self,date):
         self.tools.logging("INFO","------"+ date + "------")
-        url = self.get_module_url("list",date)
+        url = self.get_module_url("list", date)
         match_list = self.analysis_list(url)
         if match_list:
-            self.mongodb["zgzcw"]["matches"].insert(match_list)
-            self.tools.cost("处理%s数据%s条" % (date,len(match_list)))
+            self.db.insert_many(match_list)
+            log_info = {
+                "date":    date,
+                "success": True,
+                "count":   len(match_list),
+                "time":    self.tools.get_time()
+            }
+            self.logdb.replace_one({"date":date}, log_info, True)
+            self.tools.cost("处理%s数据%s条" % (date, len(match_list)))
             self.tools.mongo_clear_cache()
-
+    
     def analysis_list(self,url):
         match_list = []
-        # if self.tools.check_url_success(url):
-        #     return False
+        if self.tools.check_url_success(url):
+            return False
         dom = self.tools.get_dom_obj(url)
         for tr in dom.select(".endBet") + dom.select(".beginBet"):    
             bjop = self.get_bjop(tr.select(".wh-10")[0].get("newplayid"))
@@ -96,11 +121,10 @@ class Zgzcw:
                     "estimate":self.estimate(bjop["rates"])
                 }
                 match_list.append(match)
-        # self.tools.marked_url_success(url,True)
+        self.tools.marked_url_success(url, True)
         return match_list 
 
-    def get_bjop(self,newplayid):
-        return self.analysis_bjop(self.get_module_url("bjop",newplayid))
+
 
     def analysis_bjop(self,url):
         if self.check_bjop_done(url):
@@ -163,11 +187,17 @@ class Zgzcw:
         }
         self.tools.logging("INFO",host_name + " VS "+ visit_name + ": success")
         return ret
+
+    def get_bjop(self, newplayid):
+        return self.analysis_bjop(self.get_module_url("bjop", newplayid))
     
     def check_bjop_done(self,url):
-        return self.mongodb["zgzcw"]["matches"].find_one({"bjop.url":url})
+        return self.db.find_one({"bjop.url":url})
 
-    def estimate(self,data): # 根据历史记录统计某赔率下的胜率
+    def date_has_done(self, date):
+        return self.logdb.find_one({"date": date})
+
+    def estimate(self, data): # 根据历史记录统计某赔率下的胜率
         arr = ["Interwetten","竞彩官方(胜平负)"]
         rt = {}
         for key in arr:
