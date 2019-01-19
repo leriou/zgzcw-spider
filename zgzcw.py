@@ -113,9 +113,9 @@ class Zgzcw:
         self.tools.marked_url_success(url, True)
         self.db.insert_many(match_list)
 
-    
+        date = url[-10:]
         log_info = {
-            "date":    url[-10:],
+            "date":    date,
             "success": True,
             "count":   len(match_list),
             "time":    self.tools.get_time()
