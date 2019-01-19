@@ -13,7 +13,7 @@ class Zgzcw:
         self.log_collection = "log"
         
         """
-            params:
+        params:
             offset_time: 从当前时间多久前开始抓数据, 今天的比赛还没有出结果
             limit_day:   抓取多少天然后停止
         """
@@ -28,6 +28,8 @@ class Zgzcw:
         self.tools.set_cache(self.dbname, self.cache_collection)
         self.db    = self.mongodb[self.dbname][self.data_collection]
         self.logdb = self.mongodb[self.dbname][self.log_collection]
+        self.tools.create_idx(self.db, ["bjop.url", "bjop.id"])
+        self.tools.create_idx(self.logdb, ["date"])
         
     # 获取url
     def get_module_url(self, module, params):
@@ -135,7 +137,7 @@ class Zgzcw:
         host_name = dom.select(".logoVs .host-name a")[0].string
         visit_name = dom.select(".logoVs .visit-name a")[0].string
         match_date = dom.select(".bfyc-duizhen-r .date span")[0].string
-        match_score =  dom.select(".vs-score span")
+        match_score = dom.select(".vs-score span")
         if len(match_score) == 0:
             left_score = right_score = 0
         else:
@@ -211,6 +213,5 @@ class Zgzcw:
                     ret[str(r["match_result"])] += 1
                 rt[key] = ret
         return rt
-                
-        
-        
+    
+   

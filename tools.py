@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import urllib.request
+import requests
 import os
 import time
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from pymongo import MongoClient
+from pymongo import MongoClient,  ASCENDING
 import random
 
 
@@ -27,6 +27,7 @@ class Tools:
     
     def set_cache(self, db, collection):
         self.cache = self.mongo[db][collection]
+        self.create_idx(self.cache, ["_url"])
     
     # 从url获取页面内容
     def get_html(self, url):
@@ -61,7 +62,7 @@ class Tools:
         return self.browser.page_source
 
     def mongo_set(self, url, data):
-        r = self.cache.find_one({"_url": url})
+        r = self.mongo_get(url)
         if r:
             self.cache.update({"_url":url}, {"$set":data})
         else:
@@ -75,6 +76,17 @@ class Tools:
 
     def mongo_clear_cache(self):
         self.cache.update_many({},{"$set":{"text":""}})
+    
+    def create_idx(self, db, indexs):
+        db_idx = db.index_information()
+        idx_list = [db_idx[j]["key"][0][0] for j in db_idx]
+        for idx_field in indexs:
+            if not idx_list.__contains__(idx_field):
+                db.create_index(
+                    [(idx_field, ASCENDING)], 
+                    background=True,
+                    name=idx_field + "_idx", 
+                    unique=True)
 
     # 从html字符串获取dom对象
     def get_dom_by_html(self,html):
