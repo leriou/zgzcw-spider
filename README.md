@@ -38,6 +38,8 @@
 
 ## Usage
 
+`python3 main.py` 自动抓取近5年的彩票数据
+
 `python3 main.py 2018-01-07` 抓取某一天的彩票数据
 
 ## Data
