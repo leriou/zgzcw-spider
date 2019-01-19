@@ -5,9 +5,8 @@ import os
 
 class Zgzcw:
 
-    def __init__(self):
+    def _init_data(self):
         self.tools = tools.Tools()
-
         self.dbname = "zgzcw"
         self.cache_collection = "tmp-url"
         self.data_collection = "data"
@@ -16,12 +15,11 @@ class Zgzcw:
         """
             params:
             offset_time: 从当前时间多久前开始抓数据, 今天的比赛还没有出结果
-            limit_day: 抓取多少天然后停止
+            limit_day:   抓取多少天然后停止
         """
-        self.offset_time = 3600 * 24 * 5 
+        self.offset_time = 3600 * 24 * 3 
         self.limit_day = 365 * 5 
 
-    def _init_data(self):
         self.list_url = "http://cp.zgzcw.com/lottery/jchtplayvsForJsp.action?lotteryId=47&type=jcmini"
         self.bjop_url = "http://fenxi.zgzcw.com/"
         self.company_list = ["Interwetten","竞彩官方(胜平负)","威廉希尔","伟德(直布罗陀)","立博","澳门","Bet365","香港马会"]
@@ -51,12 +49,12 @@ class Zgzcw:
         if date != None:
             self.get_list_by_date(date)
         else:
-            now = time.time() - self.offset_time 
+            start_time = time.time() - self.offset_time 
             limit = self.limit_day
             loop = True
             while loop:
-                date = time.strftime("%Y-%m-%d", time.localtime(now))
-                now -= 3600*24
+                date = time.strftime("%Y-%m-%d", time.localtime(start_time))
+                start_time -= 3600 * 24
                 limit -= 1
                 loop = (limit > 0)
                 if not self.date_has_done(date):
@@ -64,28 +62,19 @@ class Zgzcw:
         self.tools.close_browser()
     
     def get_list_by_date(self,date):
-        self.tools.logging("INFO","------"+ date + "------")
+        self.tools.logging("INFO", "------"+ date + "------")
         url = self.get_module_url("list", date)
-        match_list = self.analysis_list(url)
-        if match_list:
-            self.db.insert_many(match_list)
-            log_info = {
-                "date":    date,
-                "success": True,
-                "count":   len(match_list),
-                "time":    self.tools.get_time()
-            }
-            self.logdb.replace_one({"date":date}, log_info, True)
-            self.tools.cost("处理%s数据%s条" % (date, len(match_list)))
-            self.tools.mongo_clear_cache()
+        self.analysis_list(url)
     
-    def analysis_list(self,url):
+    def analysis_list(self, url):
         match_list = []
         if self.tools.check_url_success(url):
             return False
         dom = self.tools.get_dom_obj(url)
+        
         for tr in dom.select(".endBet") + dom.select(".beginBet"):    
-            bjop = self.get_bjop(tr.select(".wh-10")[0].get("newplayid"))
+            newplayid = tr.select(".wh-10")[0].get("newplayid")
+            bjop = self.analysis_bjop(self.get_module_url("bjop", newplayid))
             if bjop:
                 odds = {}
                 for wh in tr.select(".wh-8 .tz-area"):
@@ -122,8 +111,18 @@ class Zgzcw:
                 }
                 match_list.append(match)
         self.tools.marked_url_success(url, True)
-        return match_list 
+        self.db.insert_many(match_list)
 
+        log_info = {
+            "date":    date,
+            "success": True,
+            "count":   len(match_list),
+            "time":    self.tools.get_time()
+        }
+        self.logdb.replace_one({"date":date}, log_info, True)
+        self.tools.cost("处理%s数据%s条" % (date, len(match_list)))
+        self.tools.mongo_clear_cache()
+        return match_list 
 
 
     def analysis_bjop(self,url):
@@ -185,11 +184,8 @@ class Zgzcw:
             "right_score":right_score,
             "rates":rate_list,
         }
-        self.tools.logging("INFO",host_name + " VS "+ visit_name + ": success")
+        self.tools.logging("INFO", host_name + " VS "+ visit_name + ": success")
         return ret
-
-    def get_bjop(self, newplayid):
-        return self.analysis_bjop(self.get_module_url("bjop", newplayid))
     
     def check_bjop_done(self,url):
         return self.db.find_one({"bjop.url":url})
@@ -202,7 +198,7 @@ class Zgzcw:
         rt = {}
         for key in arr:
             if data.get(key):
-                rs = self.mongodb["zgzcw"]["matches"].find({
+                rs = self.db.find({
                     "rates."+key+".begin":data[key]["begin"]
                 })
                 ret = {

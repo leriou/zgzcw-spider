@@ -128,19 +128,19 @@ class Tools:
     def get_time(self):
         return self.time2str(time.time())
     
-    def str2time(self,i):
+    def str2time(self, i):
         return time.mktime(time.strptime(i,"%Y-%m-%d %H:%M:%S"))
     
-    def time2str(self,moment):
+    def time2str(self, moment):
         return time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(moment))
         
     def cost(self, log=''):
         tmp = time.time()
         total, last = tmp - self.start, tmp - self.end
         self.end = tmp
-        self.logging("INFO"," %s cost time: %s s, until lastest %s s" % (log, total, last))
+        self.logging("INFO","%s cost time: %s s, until lastest %s s" % (log, total, last))
 
-    def logging(self,level,msg):
+    def logging(self, level, msg):
         print("%s [%s]: %s" % (self.get_time(),level,msg))
 
     def get_random_num(self, start=0, end=1):
