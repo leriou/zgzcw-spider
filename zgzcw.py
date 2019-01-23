@@ -73,7 +73,6 @@ class Zgzcw:
         if self.tools.check_url_success(url):
             return False
         dom = self.tools.get_dom_obj(url)
-        
         for tr in dom.select(".endBet") + dom.select(".beginBet"):    
             newplayid = tr.select(".wh-10")[0].get("newplayid")
             bjop = self.analysis_bjop(self.get_module_url("bjop", newplayid))
@@ -81,14 +80,18 @@ class Zgzcw:
                 odds = {}
                 for wh in tr.select(".wh-8 .tz-area"):
                     if wh.select("a")[0].text == "未开售":
-                        od = {"rq":wh.select(".rq")[0].string,"odds":False}
+                        od = {
+                            "rq":wh.select(".rq")[0].string, 
+                            "odds":False, 
+                            "comment": "未开售"
+                        }
                     else:     
                         od = {
                             "rq":wh.select(".rq")[0].string,
                             "odds":True,
-                            "win":wh.select("a")[0].text,
-                            "eq":wh.select("a")[1].text,
-                            "lost":wh.select("a")[2].text
+                            "win": wh.select("a")[0].text,
+                            "eq": wh.select("a")[1].text,
+                            "lost": wh.select("a")[2].text
                         }
                     odds[od["rq"]] = (od)       
                 match = {
@@ -104,12 +107,12 @@ class Zgzcw:
                     "match_result":bjop["match_result"],
                     "created_time":self.tools.get_time(),
                     "bjop":{
-                        "id":tr.select(".wh-10")[0].get("newplayid"),
-                        "url":bjop["url"]
+                        "id": int(newplayid),
+                        "url": bjop["url"]
                     },
-                    "odds":odds,
-                    "rates":bjop["rates"],
-                    "estimate":self.estimate(bjop["rates"])
+                    "odds": odds,
+                    "rates": bjop["rates"],
+                    "timestamp": time.time()
                 }
                 match_list.append(match)
         self.tools.marked_url_success(url, True)
@@ -195,23 +198,3 @@ class Zgzcw:
 
     def date_has_done(self, date):
         return self.logdb.find_one({"date": date})
-
-    def estimate(self, data): # 根据历史记录统计某赔率下的胜率
-        arr = ["Interwetten","竞彩官方(胜平负)"]
-        rt = {}
-        for key in arr:
-            if data.get(key):
-                rs = self.db.find({
-                    "rates."+key+".begin":data[key]["begin"]
-                })
-                ret = {
-                    "0":0,
-                    "1":0,
-                    "3":0
-                }
-                for r in rs:
-                    ret[str(r["match_result"])] += 1
-                rt[key] = ret
-        return rt
-    
-   
